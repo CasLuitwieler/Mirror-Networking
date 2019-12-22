@@ -36,6 +36,7 @@ public class PlayerMovement : NetworkBehaviour
 
     private void Move()
     {
-        _controller.Move(_moveDirection * moveSpeed * Time.deltaTime);
+        Vector3 move = _moveDirection.x * transform.right + _moveDirection.z * transform.forward;
+        _controller.Move(move * moveSpeed * Time.deltaTime);
     }
 }
