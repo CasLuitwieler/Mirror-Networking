@@ -6,14 +6,11 @@ public class PlayerID : NetworkBehaviour
 {
     private string _playerID = "not yet assigned";
 
-    private void Awake()
-    {
-        CreatePlayerID();
-    }
-
     public override void OnStartLocalPlayer()
     {
-        CmdSetPlayerID();
+        CreatePlayerID();
+        transform.name = _playerID;
+        CmdSetPlayerID(_playerID);
     }
 
     private void CreatePlayerID()
@@ -22,9 +19,9 @@ public class PlayerID : NetworkBehaviour
     }
 
     [Command]
-    private void CmdSetPlayerID()
+    private void CmdSetPlayerID(string playerID)
     {
-        Debug.Log("Adding " + _playerID);
-        NetworkIDManager.AddPlayer(_playerID, this.gameObject);
+        transform.name = playerID;
+        NetworkIDManager.AddPlayer(playerID, this.gameObject);
     }
 }

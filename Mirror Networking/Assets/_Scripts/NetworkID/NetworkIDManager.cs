@@ -28,4 +28,11 @@ public class NetworkIDManager : NetworkBehaviour
     {
         players.Add(playerID, player);
     }
+
+    public static GameObject GetPlayer(string netID)
+    {
+        players.TryGetValue("Player " + netID, out GameObject player);
+        Debug.Log("Getting : " + player.name);
+        return player;
+    }
 }

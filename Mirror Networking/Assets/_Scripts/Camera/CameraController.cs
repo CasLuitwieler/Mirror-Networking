@@ -18,14 +18,17 @@ public class CameraController : MonoBehaviour
         _distanceToTarget = 3f;
         _offset = new Vector3(0.75f, 0f, 0f);
 
-        LockCursor();
+        UnlockCursor();
     }
 
     private void Update()
     {
+        if (_target == null)
+            return;
+
         HandleInput();
     }
-     
+
     private void HandleInput()
     {
         _yRotation += Input.GetAxis("Mouse X") * Time.deltaTime * _yRotationSpeed;
@@ -42,6 +45,8 @@ public class CameraController : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (_target == null)
+            return;
         transform.position = _target.position;                                                                      //move camera to target position
         transform.position += Mathf.Cos(_xRotation * Mathf.Deg2Rad) * _distanceToTarget * _target.forward * -1f +   //move camera back
                               Mathf.Sin(_xRotation * Mathf.Deg2Rad) * _distanceToTarget * _target.up;               //move camera up/down

@@ -25,8 +25,8 @@ public class PlayerCombatBehaviour : NetworkBehaviour
         if (!isLocalPlayer)
             return;
 
-        _cam = GetComponent<PlayerCameraSetup>().Cam;
-        _camController = GetComponent<PlayerCameraSetup>().CamController;
+        _cam = FindObjectOfType<Camera>();
+        _camController = FindObjectOfType<CameraController>();
     }
 
     private void Update()
@@ -40,23 +40,24 @@ public class PlayerCombatBehaviour : NetworkBehaviour
         HandleInput();
     }
 
-    [Client]
     private void HandleInput()
     {
         if (_inputReader.DamageKeyDown())
         {
             _ray = _cam.ScreenPointToRay(Input.mousePosition);
-            if (!Physics.Raycast(_ray, out RaycastHit hit, _hitRange = _camController.DistanceToTarget, _damageableObjectsLayer))
+            if (!Physics.Raycast(_ray, out RaycastHit hit, _hitRange + _camController.DistanceToTarget, _damageableObjectsLayer))
                 return;
 
-            if (TryGetComponent(out NetworkIdentity networkID))
+            Debug.Log("hit object " + hit.transform.gameObject.name);
+
+            if (hit.transform.TryGetComponent(out NetworkIdentity networkID))
             {
                 //damage the object that was hit
                 CmdDealDamage(networkID);
             }
             else
             {
-                if (TryGetComponent(out IDamageable damageable))
+                if (hit.transform.TryGetComponent(out IDamageable damageable))
                 {
                     Debug.LogError("Dealing damage to an object that doesn't have a network identity");
                     damageable.TakeDamge(_damageAmount);
@@ -68,8 +69,11 @@ public class PlayerCombatBehaviour : NetworkBehaviour
     [Command]
     private void CmdDealDamage(NetworkIdentity networkID)
     {
-        if (networkID.TryGetComponent(out IDamageable damageable))
+        GameObject target = NetworkIDManager.GetPlayer(networkID.netId.ToString());
+
+        if (target.TryGetComponent(out IDamageable damageable))
         {
+            Debug.Log("Found IDamageable");
             damageable.TakeDamge(_damageAmount);
         }
     }

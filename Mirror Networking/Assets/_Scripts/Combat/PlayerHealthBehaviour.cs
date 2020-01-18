@@ -4,14 +4,24 @@ using UnityEngine;
 
 public class PlayerHealthBehaviour : NetworkBehaviour, IDamageable
 {
-    public static event Action OnPlayerDied;
+    public delegate void OnPlayerDied();
+    public delegate void OnHealthChanged(float healthPercentage);
+
+    //TODO: when new player joins, show the correct health value
+    [SyncEvent]
+    public event OnHealthChanged EventHealthChanged;
+
+    [SyncEvent]
+    public event OnPlayerDied EventPlayerDied;
+
+    [SyncVar]
+    private float _health;
 
     [SerializeField]
     private float _maxHealth = 100f;
 
-    [SyncVar]
-    private float _health;
     private bool isDead = false;
+    private HealthBar _healthBar;
 
     private void Awake()
     {
@@ -23,34 +33,21 @@ public class PlayerHealthBehaviour : NetworkBehaviour, IDamageable
         if (isDead)
             return;
 
-        Debug.Log("Before: " + _health);
         _health -= damageAmount;
-        Debug.Log("After: " + _health);
+        float healthPercentage = _health / _maxHealth;
+        EventHealthChanged?.Invoke(healthPercentage);
 
         if (_health <= 0)
         {
             isDead = true;
-            OnPlayerDied?.Invoke();
-            Debug.Log(gameObject.name + " died");
-            Destroy(this.gameObject);
+            EventPlayerDied?.Invoke();
+            DestroyAuthorisedObjects(GetComponent<NetworkIdentity>());
         }
     }
 
-    /*
-    [TargetRpc]
-    public void TargetTakeDamge(NetworkIdentity networkID, float damageAmount)
+    private void DestroyAuthorisedObjects(NetworkIdentity networkIdentity)
     {
-        if (isDead)
-            return;
-
-        _health -= damageAmount;
-        if(_health <= 0)
-        {
-            isDead = true;
-            OnPlayerDied?.Invoke();
-            Debug.Log(gameObject.name + " died");
-            Destroy(this.gameObject);
-        }
+        //NetworkServer.Destroy(this.gameObject);
+        NetworkServer.DestroyPlayerForConnection(networkIdentity.connectionToClient);
     }
-    */
 }

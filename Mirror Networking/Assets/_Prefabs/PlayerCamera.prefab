@@ -103,4 +103,3 @@ MonoBehaviour:
   _zoomSpeed: 50
   _minDistanceToTarget: 3
   _maxDistanceToTarget: 5
-  _rotationOffset: 0.25
